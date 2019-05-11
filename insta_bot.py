@@ -3,7 +3,6 @@ from pymongo import MongoClient
 client = MongoClient('localhost')
 db = client.InstagramCrawl
 import time
-#from langdetect import detect as lanD
 from textblob import TextBlob
 import re
 import emoji
@@ -171,14 +170,6 @@ def main():
                 crawler(i["username"])
                 update = db.instagram_users.update({i["username"]}, {"crawlStatus": True})
 
-    #print("End of instagram username lists...")
-    # t = input("Do you have any username? (reply y or n")
-    # if t == "y" or "yes" or "Y" or "Yes":
-    #     startFunc()
-    # else:
-
-
-
 
 
 def getfollowingListInfo(username):
@@ -277,8 +268,6 @@ def getfollowerListInfo(username):
 
 
 if __name__ == "__main__":
-
-
     bot.login()
     main()
     print("Bye")
