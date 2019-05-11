@@ -75,15 +75,13 @@ def profileScrap(username):
         coments = bot.get_media_comments(m)
 
         try:
-
-
 	        for c in coments:
 		        a = {"owner": username, "mediaID": m, "user_id": c["user_id"], "username": c["user"]["username"],
 		             "full_name": c["user"]["full_name"], "text": c["text"], "cm_lanq": lanqdet(c["text"])}
 		        coment.append(a)
 
 
-		except:
+	    except:
 	        print("Somthings wrong in get comments...")
 
 
@@ -94,10 +92,13 @@ def profileScrap(username):
 		    print("Somthings wrong in get likers...")
 
         try:
+
 	        info = bot.get_media_info(m)
 	        if len(info) == 0:  # save for crawle later
 		        data = {"owner": username, "mediaID": m, "likers": likers,
 		                "commntes": coment, "full_crawl": False}
+		        i = db.instagram_users_posts.insert_one(data)
+
 	        elif len(info) > 0:
 		        for i in info:
 			        lande = lanqdet(i["caption"]["text"])
@@ -107,11 +108,10 @@ def profileScrap(username):
 			                "caption_is_edited": i["caption_is_edited"], "like_count": i["like_count"],
 			                "likers": likers,
 			                "commntes": coment, "full_crawl": True}
+			        i = db.instagram_users_posts.insert_one(data)
 			        break
 
-
-
-		except:
+	    except:
 	        print("Somthings wrong in get likers...")
 
 
