@@ -10,6 +10,21 @@ import emoji
 
 bot = Bot()
 
+
+def getInstagramUrlFromMediaId(media_id):
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+    shortened_id = ''
+
+    while media_id > 0:
+        remainder = media_id % 64
+        # dual conversion sign gets the right ID for new posts
+        media_id = (media_id - remainder) // 64;
+        # remainder should be casted as an integer to avoid a type error.
+        shortened_id = alphabet[int(remainder)] + shortened_id
+
+    return 'https://instagram.com/p/' + shortened_id + '/'
+
+
 #remove hashtag
 def hashtaghEx(s):
     t = remove_emoji(s)
@@ -70,6 +85,7 @@ def profileScrap(username):
     userId = bot.get_userid_from_username(username)
     medias = bot.get_total_user_medias(user_id=userId)
 
+
     for m in medias:
         coment = []
         coments = bot.get_media_comments(m)
@@ -85,14 +101,19 @@ def profileScrap(username):
 
         try:
             likers = bot.get_media_likers(m)
+
         except:
             print("Somthings wrong in get likers...")
 
         try:
             info = bot.get_media_info(m)
             if len(info) == 0:
-                data = {"owner": username, "mediaID": m, "likers": likers, "commntes": coment, "full_crawl": False}
+                mediaLink = getInstagramUrlFromMediaId(m)
+                data = {"owner": username, "mediaID": m,"media link":mediaLink ,"likers": likers, "commntes": coment, "full_crawl": False}
                 i = db.instagram_users_posts.insert_one(data)
+                print("owner: %s" % username)
+                ml = str(mediaLink)
+                print("media link: %s" % ml)
 
             elif len(info) > 0:
                 for i in info:
@@ -104,7 +125,8 @@ def profileScrap(username):
                             "likers": likers,
                             "commntes": coment, "full_crawl": True}
                     i = db.instagram_users_posts.insert_one(data)
-                    break
+                    print(data)
+
         except:
             print("Somthings wrong in get infes...")
 
