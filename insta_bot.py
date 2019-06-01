@@ -6,9 +6,13 @@ import time
 from textblob import TextBlob
 import re
 import emoji
-from language_detector import detect_language
+from bson.binary import Binary
+import requests
 
 
+def picToBinary(url):
+    pic = requests.get(url).content
+    return Binary(pic)
 
 
 bot = Bot()
@@ -155,6 +159,7 @@ def profileScrap(username):
     for m in medias:
         coment = []
         coments = bot.get_media_comments(m)
+        bot.download_photo(media_id=m,folder="InstagramPhotos/" + username,filename= m)
 
         try:
             for c in coments:
@@ -356,14 +361,7 @@ def getfollowerListInfo(username):
 
 
 
-
-
 if __name__ == "__main__":
     bot.login()
     main()
-
-
-
-
-
 
