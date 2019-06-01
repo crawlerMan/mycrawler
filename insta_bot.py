@@ -6,7 +6,9 @@ import time
 from textblob import TextBlob
 import re
 import emoji
-from stop_words import get_stop_words
+from language_detector import detect_language
+
+
 
 
 bot = Bot()
@@ -48,7 +50,6 @@ def lanqdet(text):
 
     if text == None:
         return "null"
-
 
     lanList = []
     listStop = ['aber', 'alle', 'allem', 'allen', 'aller', 'alles', 'als', 'also', 'am', 'an', 'ander', 'andere', 'anderem',
@@ -126,8 +127,6 @@ def lanqdet(text):
 
     filtered_fr = [w for w in i if not w in listStop]
 
-    print(filtered_fr)
-
     for j in filtered_fr:
         try:
             b = TextBlob(j)
@@ -139,12 +138,7 @@ def lanqdet(text):
         except:
             print("Somethings was wrongs in lanq detect")
 
-    if len(lanList) == 1:
-        b = TextBlob(t)
-        x = b.detect_language()
-        return x
-    else:
-        return lanList
+    return lanList
 
 
 
@@ -164,8 +158,9 @@ def profileScrap(username):
 
         try:
             for c in coments:
+                lanDC = lanqdet(c["text"])
                 a = {"owner": username, "mediaID": m, "user_id": c["user_id"], "username": c["user"]["username"],
-                     "full_name": c["user"]["full_name"], "text": c["text"]}
+                     "full_name": c["user"]["full_name"], "text": c["text"],"coment_lanq":lanDC}
             coment.append(a)
 
         except:
@@ -200,7 +195,7 @@ def profileScrap(username):
                     print(data)
 
         except:
-            print("Somthings wrong in get infes...")
+            print("Somthings wrong in get infos...")
 
 
 def checkout(username):
@@ -364,10 +359,8 @@ def getfollowerListInfo(username):
 
 
 if __name__ == "__main__":
-    #bot.login()
-    #main()
-    print("Bye")
-    print(lanqdet("إذا زارتک شدّه فاعلم أنّها سحابه صیف عن قلیل تقشع، ولا یخیفک رعدها، ولا یرهبک برقها، فربّما کانت محمّلهً بالغیث"))
+    bot.login()
+    main()
 
 
 
