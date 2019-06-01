@@ -11,12 +11,24 @@ import requests
 
 
 def picToBinary(url):
-    pic = requests.get(url).content
-    return Binary(pic)
+    Picture_request = requests.get(url)
+    if Picture_request.status_code == 200:
+        return Picture_request.content
 
 
 bot = Bot()
 
+
+#image extractor from json
+def binaryImageList(img):
+    for k in img:
+        imageList = []
+        width = k["width"]
+        height = k["height"]
+        url = k["url"]
+        binary = picToBinary(url)
+        imageList.append({"width": width, "height": height, "Im_Binary": binary})
+    return imageList
 
 def getInstagramUrlFromMediaId(media_id):
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
@@ -190,8 +202,10 @@ def profileScrap(username):
             elif len(info) > 0:
                 for i in info:
                     lande = lanqdet(i["caption"]["text"])
+                    image = i["image_versions2"]["candidates"]
+                    bImg = binaryImageList(image)
                     data = {"owner": username, "mediaID": m, "caption": i["caption"]["text"], "caption_lanq": lande,
-                            "image": i["image_versions2"]["candidates"], "hashtags": hashtaghEx(i["caption"]["text"]),
+                            "image": image,"Binary_image":bImg ,"hashtags": hashtaghEx(i["caption"]["text"]),
                             "comment_likes_enabled": i["comment_likes_enabled"], "comment_count": i["comment_count"],
                             "caption_is_edited": i["caption_is_edited"], "like_count": i["like_count"],
                             "likers": likers,
