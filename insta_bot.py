@@ -22,28 +22,24 @@ bot = Bot()
 
 
 def resume():
-
     try:
         if os.path.exists("resume.txt"):
             f = open("resume.txt", "r")
             if f.mode == "r":
                 x = f.readlines()
-                if x == None:
-                    username,types,lists = None
-                if len(x) <= 2:
-                    username = x[0]
-                    types = x[1]
-                    lists = None
-                if len(x) >= 2:
-                    username = x[0]
-                    types = x[1]
-                    lists = x[2:]
+                if len(x) == 0:
+                    return None
 
-                return username,types,lists
+                else:
+                    return x
+
+
+
+
 
         else:
             print("resume file not found!")
-            return None,None,None
+            return 0,0,0
 
     except:
         print("somthings wrongs in resume...!")
@@ -332,12 +328,16 @@ def profileScrap(username,list = None):
 
 def checkout(username):
     try:
-        find = db.instagram_users.find({"username": username, "crawlStatus": True})
+        print("check %s in database..." % username)
         findc = db.instagram_users.find({"username": username}).count()
+        find = db.instagram_users.find({"username": username, "crawlStatus": True})
+
     except:
         print("Somethings in database was wrongs...")
 
     try:
+
+
         if findc == 0:
             return True
         elif findc == 1:
@@ -382,15 +382,41 @@ def main(ip):
 
     if ip == 1:
         print("resume...")
-        username, type, list = resume()
-        if username == None:
-            main()
+        x = resume()
+        if x == None:
+            print("resume not found...\n")
+            time.sleep(1)
+            ip = input("""Choose one of them(Type number):
+                    2 - type an username...
+                    3 - Auto find username from database...\n""")
+
+            main(int(ip))
 
         else:
-            if type == "crawler":
-                profileScrap(username, list=list)
-            elif type == "Following" or "Followers":
-                crawler(username=username, type=type, list=list)
+            if len(x) <= 2 and len(x) > 0:
+                username = x[0]
+                types = x[1]
+                lists = None
+
+                if type == "crawler":
+                    profileScrap(username, list=list)
+                elif type == "Following" or "Followers":
+                    crawler(username=username, type=type, list=list)
+
+
+                return username, types, lists
+            if len(x) >= 2:
+                username = x[0]
+                types = x[1]
+                lists = x[2:]
+
+                if type == "crawler":
+                    profileScrap(username, list=list)
+                elif type == "Following" or "Followers":
+                    crawler(username=username, type=type, list=list)
+
+
+
 
     if ip == 2:
         startFunc()
@@ -645,7 +671,7 @@ def getfollowerListInfo(username,list = None):
 
 
 if __name__ == "__main__":
-    bot.login()
+    #bot.login()
     ip = input("""Choose one of them(Type number):
         1 - Resume...
         2 - type an username...
