@@ -24,20 +24,26 @@ bot = Bot()
 def resume():
 
     try:
-        if os.path.exists("/Users/vahid/Downloads/resume.txt"):
-            f = open("/Users/vahid/Downloads/resume.txt", "r")
+        if os.path.exists("resume.txt"):
+            f = open("resume.txt", "r")
             if f.mode == "r":
                 x = f.readlines()
-                username = x[0]
-                types = x[2]
-                lists = x[3:]
-
+                if x == None:
+                    username,types,lists = None
+                if len(x) <= 2:
+                    username = x[0]
+                    types = x[1]
+                    lists = None
+                if len(x) >= 2:
+                    username = x[0]
+                    types = x[1]
+                    lists = x[2:]
 
                 return username,types,lists
 
         else:
             print("resume file not found!")
-            return None
+            return None,None,None
 
     except:
         print("somthings wrongs in resume...!")
@@ -184,7 +190,7 @@ def lanqdet(text):
 
 
 
-def crawler(username,type, list):
+def crawler(username,type = None, list=None):
 
     if type == None:
         getfollowingListInfo(username)
@@ -372,13 +378,9 @@ def startFunc():
 
 
 
-def main():
-    ip = input("""Choose one of them:
-    1 - Resume...
-    2 - type an username...
-    3 - Auto find username from database...\n""")
+def main(ip):
 
-    if ip == 1 or "one" or "Resume" or "resume":
+    if ip == 1:
         print("resume...")
         username, type, list = resume()
         if username == None:
@@ -390,10 +392,11 @@ def main():
             elif type == "Following" or "Followers":
                 crawler(username=username, type=type, list=list)
 
-    if ip == 2 or "two" or "type an username":
+    if ip == 2:
         startFunc()
 
-    if ip == 3 or "tree" or "Auto" or "Auto find username from database":
+
+    if ip == 3:
 
         print("search for username in database...")
         while True:
@@ -643,5 +646,9 @@ def getfollowerListInfo(username,list = None):
 
 if __name__ == "__main__":
     bot.login()
-    main()
+    ip = input("""Choose one of them(Type number):
+        1 - Resume...
+        2 - type an username...
+        3 - Auto find username from database...\n""")
+    main(ip=int(ip))
 
