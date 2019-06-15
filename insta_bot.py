@@ -8,6 +8,7 @@ import re
 import emoji
 from bson.binary import Binary
 import requests
+import os
 
 
 def picToBinary(url):
@@ -17,6 +18,31 @@ def picToBinary(url):
 
 
 bot = Bot()
+
+
+
+def resume():
+
+    try:
+        if os.path.exists("/Users/vahid/Downloads/resume.txt"):
+            f = open("/Users/vahid/Downloads/resume.txt", "r")
+            if f.mode == "r":
+                x = f.readlines()
+                username = x[0]
+                types = x[2]
+                lists = x[3:]
+
+
+                return username,types,lists
+
+        else:
+            print("resume file not found!")
+            return None
+
+    except:
+        print("somthings wrongs in resume...!")
+
+
 
 
 #image extractor from json
@@ -158,63 +184,144 @@ def lanqdet(text):
 
 
 
-def crawler(username):
-    getfollowingListInfo(username)
-    getfollowerListInfo(username)
+def crawler(username,type, list):
+
+    if type == None:
+        getfollowingListInfo(username)
+        getfollowerListInfo(username)
+
+    elif type == "Follwers":
+        getfollowingListInfo(username,list)
+
+    elif type == "Followings":
+        getfollowerListInfo(username,list)
 
 
-def profileScrap(username):
+
+
+def profileScrap(username,list = None):
     userId = bot.get_user_id_from_username(username)
     medias = bot.get_total_user_medias(user_id=userId)
 
+    f = open("resume.txt", "w+")
+    f.write(username + '\n' + "crawler")
+    f.close()
 
-    for m in medias:
-        coment = []
-        coments = bot.get_media_comments(m)
-        bot.download_photo(media_id=m,folder="InstagramPhotos/" + username,filename= m)
+    if list == None:
+        for m in medias:
+            coment = []
+            coments = bot.get_media_comments(m)
+            bot.download_photo(media_id=m, folder="InstagramPhotos/" + username, filename= m)
 
-        try:
-            for c in coments:
-                lanDC = lanqdet(c["text"])
-                a = {"owner": username, "mediaID": m, "user_id": c["user_id"], "username": c["user"]["username"],
-                     "full_name": c["user"]["full_name"], "text": c["text"],"coment_lanq":lanDC}
-            coment.append(a)
 
-        except:
-            print("Somthings wrong in get comments...")
+            try:
+                for c in coments:
+                    lanDC = lanqdet(c["text"])
+                    a = {"owner": username, "mediaID": m, "user_id": c["user_id"], "username": c["user"]["username"],
+                         "full_name": c["user"]["full_name"], "text": c["text"], "coment_lanq": lanDC}
+                coment.append(a)
 
-        try:
-            likers = bot.get_media_likers(m)
+            except:
+                print("Somthings wrong in get comments...")
 
-        except:
-            print("Somthings wrong in get likers...")
+            try:
+                likers = bot.get_media_likers(m)
 
-        try:
-            info = bot.get_media_info(m)
-            if len(info) == 0:
-                mediaLink = getInstagramUrlFromMediaId(m)
-                data = {"owner": username, "mediaID": m,"media link":mediaLink ,"likers": likers, "commntes": coment, "full_crawl": False}
-                i = db.instagram_users_posts.insert_one(data)
-                print("owner: %s" % username)
-                ml = str(mediaLink)
-                print("media link: %s" % ml)
+            except:
+                print("Somthings wrong in get likers...")
 
-            elif len(info) > 0:
-                for i in info:
-                    lande = lanqdet(i["caption"]["text"])
-                    image = i["image_versions2"]["candidates"]
-                    bImg = binaryImageList(image)
-                    data = {"owner": username, "mediaID": m, "caption": i["caption"]["text"], "caption_lanq": lande,
-                            "image": image,"Binary_image":bImg ,"hashtags": hashtaghEx(i["caption"]["text"]),
-                            "comment_likes_enabled": i["comment_likes_enabled"], "comment_count": i["comment_count"],
-                            "caption_is_edited": i["caption_is_edited"], "like_count": i["like_count"],
-                            "likers": likers,
-                            "commntes": coment, "full_crawl": True}
+            try:
+                info = bot.get_media_info(m)
+                if len(info) == 0:
+                    mediaLink = getInstagramUrlFromMediaId(m)
+                    data = {"owner": username, "mediaID": m, "media link": mediaLink, "likers": likers,
+                            "commntes": coment, "full_crawl": False}
                     i = db.instagram_users_posts.insert_one(data)
-                    print(data)
+                    print("owner: %s" % username)
+                    ml = str(mediaLink)
+                    print("media link: %s" % ml)
 
-        except:
-            print("Somthings wrong in get infos...")
+                    f = open("resume.txt", "a+")
+                    f.write('\n' + str(m))
+                    f.close()
+
+                elif len(info) > 0:
+                    for i in info:
+                        lande = lanqdet(i["caption"]["text"])
+                        image = i["image_versions2"]["candidates"]
+                        bImg = binaryImageList(image)
+                        data = {"owner": username, "mediaID": m, "caption": i["caption"]["text"], "caption_lanq": lande,
+                                "image": image, "Binary_image": bImg, "hashtags": hashtaghEx(i["caption"]["text"]),
+                                "comment_likes_enabled": i["comment_likes_enabled"],
+                                "comment_count": i["comment_count"],
+                                "caption_is_edited": i["caption_is_edited"], "like_count": i["like_count"],
+                                "likers": likers,
+                                "commntes": coment, "full_crawl": True}
+                        i = db.instagram_users_posts.insert_one(data)
+                        print(data)
+
+                        f = open("resume.txt", "a+")
+                        f.write('\n' + str(m))
+                        f.close()
+
+            except:
+                print("Somthings wrong in get infos...")
+
+    else:
+
+        medias = modification(a = medias,b=list)
+
+        for m in medias:
+            coment = []
+            coments = bot.get_media_comments(m)
+            bot.download_photo(media_id=m, folder="InstagramPhotos/" + username, filename=m)
+
+            try:
+                for c in coments:
+                    lanDC = lanqdet(c["text"])
+                    a = {"owner": username, "mediaID": m, "user_id": c["user_id"], "username": c["user"]["username"],
+                         "full_name": c["user"]["full_name"], "text": c["text"], "coment_lanq": lanDC}
+                coment.append(a)
+
+            except:
+                print("Somthings wrong in get comments...")
+
+            try:
+                likers = bot.get_media_likers(m)
+
+            except:
+                print("Somthings wrong in get likers...")
+
+            try:
+                info = bot.get_media_info(m)
+                if len(info) == 0:
+                    mediaLink = getInstagramUrlFromMediaId(m)
+                    data = {"owner": username, "mediaID": m, "media link": mediaLink, "likers": likers,
+                            "commntes": coment, "full_crawl": False}
+                    i = db.instagram_users_posts.insert_one(data)
+                    print("owner: %s" % username)
+                    ml = str(mediaLink)
+                    print("media link: %s" % ml)
+
+                elif len(info) > 0:
+                    for i in info:
+                        lande = lanqdet(i["caption"]["text"])
+                        image = i["image_versions2"]["candidates"]
+                        bImg = binaryImageList(image)
+                        data = {"owner": username, "mediaID": m, "caption": i["caption"]["text"], "caption_lanq": lande,
+                                "image": image, "Binary_image": bImg, "hashtags": hashtaghEx(i["caption"]["text"]),
+                                "comment_likes_enabled": i["comment_likes_enabled"],
+                                "comment_count": i["comment_count"],
+                                "caption_is_edited": i["caption_is_edited"], "like_count": i["like_count"],
+                                "likers": likers,
+                                "commntes": coment, "full_crawl": True}
+                        i = db.instagram_users_posts.insert_one(data)
+                        print(data)
+
+            except:
+                print("Somthings wrong in get infos...")
+
+
 
 
 def checkout(username):
@@ -266,110 +373,269 @@ def startFunc():
 
 
 def main():
-    while True:
-        find = db.instagram_users.find({"crawlStatus": False})
-        findc = db.instagram_users.find({"crawlStatus": False}).count()
-        if findc == 0:
-            startFunc()
-        elif findc > 0:
-            for i in find:
-                print("Start crawling %s" % i["username"])
-                profileScrap(i["username"])
-                crawler(i["username"])
-                update = db.instagram_users.update({i["username"]}, {"$set": {"crawlStatus": True}})
+    ip = input("""Choose one of them:
+    1 - Resume...
+    2 - type an username...
+    3 - Auto find username from database...\n""")
+
+    if ip == 1 or "one" or "Resume" or "resume":
+        print("resume...")
+        username, type, list = resume()
+        if username == None:
+            main()
+
+        else:
+            if type == "crawler":
+                profileScrap(username, list=list)
+            elif type == "Following" or "Followers":
+                crawler(username=username, type=type, list=list)
+
+    if ip == 2 or "two" or "type an username":
+        startFunc()
+
+    if ip == 3 or "tree" or "Auto" or "Auto find username from database":
+
+        print("search for username in database...")
+        while True:
+            find = db.instagram_users.find({"crawlStatus": False})
+            findc = db.instagram_users.find({"crawlStatus": False}).count()
+            if findc == 0:
+                print("can not find any username in database...\n")
+                startFunc()
+            elif findc > 0:
+                for i in find:
+                    print("Start crawling %s" % i["username"])
+                    profileScrap(i["username"])
+                    crawler(i["username"])
+                    update = db.instagram_users.update({i["username"]}, {"$set": {"crawlStatus": True}})
 
 
 
 
 
-def getfollowingListInfo(username):
+
+
+#remove list b from list a
+def modification(a,b):
+    for x in b:
+        try:
+            a.remove(int(x))
+        except ValueError:
+            pass
+    return a
+
+
+
+
+def getfollowingListInfo(username,list = None):
+
+    f = open("resume.txt", "w+")
+    f.write(username + '\n' + "Following")
+    f.close()
 
     following = bot.get_user_following(username)
-    if len(following) > 0:
-        data = {"username": username, "following_list": following}
-        i = db.instagram_users_list.insert_one(data)
 
-        y = 0
-        g = 1
-        for e in following:
-            t = db.instagram_users.find({"owner": username, "type": "following", "user_id": int(e)}).count()
-            if t == 0:
-                following_de = bot.get_user_info(e)
-                # print(following_de)
-                o = following_de
-                D = {"owner": username, "type": "following", "username": o["username"], "user_id": int(e),
-                     "full_name": o["full_name"], "is_private": o["is_private"],
-                     "follower_count": o["follower_count"], "following_count": o["following_count"],
-                     "biography": o["biography"], "linke": o["external_url"], "profile_pic": o["profile_pic_url"]}
-                i = db.instagram_users_info.insert_one(D)
+    #agar hich listi naashtim
+    if list == None:
 
-                print("\n")
-                print(str(g) + " - ")
-                g = g + 1
-                y = y + 1
-                print("owner:%s" % username)
-                print("username:%s" % o["username"])
+        if len(following) > 0:
+            data = {"username": username, "following_list": following}
+            i = db.instagram_users_list.insert_one(data)
 
-                find = db.instagram_users.find({"username" : o["username"]}).count()
-                if find == 0:
-                    i2 = db.instagram_users.insert({"username": o["username"], "crawlStatus": False})
+            y = 0
+            g = 1
+            for e in following:
+                t = db.instagram_users.find({"owner": username, "type": "following", "user_id": int(e)}).count()
+                if t == 0:
+                    following_de = bot.get_user_info(e)
+                    # print(following_de)
+                    o = following_de
+                    D = {"owner": username, "type": "following", "username": o["username"], "user_id": int(e),
+                         "full_name": o["full_name"], "is_private": o["is_private"],
+                         "follower_count": o["follower_count"], "following_count": o["following_count"],
+                         "biography": o["biography"], "linke": o["external_url"], "profile_pic": o["profile_pic_url"]}
+                    i = db.instagram_users_info.insert_one(D)
 
-                time.sleep(10)
-                if y > 70:
-                    time.sleep(360)
-                    y = 0
+                    print("\n")
+                    print(str(g) + " - ")
+                    g = g + 1
+                    y = y + 1
+                    print("owner:%s" % username)
+                    print("username:%s" % o["username"])
+
+                    f = open("resume.txt", "a+")
+                    f.write('\n' + str(e))
+                    f.close()
+
+                    find = db.instagram_users.find({"username": o["username"]}).count()
+                    if find == 0:
+                        i2 = db.instagram_users.insert({"username": o["username"], "crawlStatus": False})
+
+                    time.sleep(10)
+                    if y > 70:
+                        time.sleep(360)
+                        y = 0
+                        continue
+                else:
                     continue
-            else:
-                continue
+        else:
+            d = {"owner": username, "following list zero": True}
+            o = db.instagram_skip_list.insert_one(d)
+
+    #agar list dashtim
     else:
-        d = {"owner": username, "following list zero": True}
-        o = db.instagram_skip_list.insert_one(d)
+        for i in list:
+            print("Skip username: %s:" % i)
+
+            #hazf az list
+            following = modification(following,list)
+            y = 0
+            g = 1
+            for e in following:
+                t = db.instagram_users.find({"owner": username, "type": "following", "user_id": int(e)}).count()
+                if t == 0:
+                    following_de = bot.get_user_info(e)
+                    # print(following_de)
+                    o = following_de
+                    D = {"owner": username, "type": "following", "username": o["username"], "user_id": int(e),
+                         "full_name": o["full_name"], "is_private": o["is_private"],
+                         "follower_count": o["follower_count"], "following_count": o["following_count"],
+                         "biography": o["biography"], "linke": o["external_url"], "profile_pic": o["profile_pic_url"]}
+                    i = db.instagram_users_info.insert_one(D)
+
+                    print("\n")
+                    print(str(g) + " - ")
+                    g = g + 1
+                    y = y + 1
+                    print("owner:%s" % username)
+                    print("username:%s" % o["username"])
+
+                    f = open("resume.txt", "a+")
+                    f.write('\n' + str(e))
+                    f.close()
+
+                    find = db.instagram_users.find({"username": o["username"]}).count()
+                    if find == 0:
+                        i2 = db.instagram_users.insert({"username": o["username"], "crawlStatus": False})
+
+                    time.sleep(10)
+                    if y > 70:
+                        time.sleep(360)
+                        y = 0
+                        continue
+                else:
+                    continue
+        else:
+            d = {"owner": username, "following list zero": True}
+            o = db.instagram_skip_list.insert_one(d)
 
 
 
 
-def getfollowerListInfo(username):
+
+
+
+
+
+def getfollowerListInfo(username,list = None):
+
+    f = open("resume.txt", "w+")
+    f.write(username + '\n' + "Followers")
+    f.close()
+
     follower = bot.get_user_followers(username)
-    if len(follower) > 0:
-        data = {"username": username, "follower_list": follower}
-        i = db.merihach_user_follower_userid.insert_one(data)
-        # for r in following:
-        #    l = r
-        y = 0
-        g = 1
-        for e in follower:
-            t = db.instagram_users.find({"owner": username, "type": "follower", "user_id": int(e)}).count()
-            if t == 0:
-                following_de = bot.get_user_info(e)
-                # print(following_de)
-                o = following_de
-                D = {"owner": username, "type": "follower", "username": o["username"], "user_id": int(e),
-                     "full_name": o["full_name"], "is_private": o["is_private"],
-                     "follower_count": o["follower_count"], "following_count": o["following_count"],
-                     "biography": o["biography"], "linke": o["external_url"], "profile_pic": o["profile_pic_url"]}
-                i = db.merihach_instagram_users.insert_one(D)
-                print("\n")
-                print(str(g) + " - ")
-                g = g + 1
-                y = y + 1
-                print("owner:%s" % username)
-                print("username:%s" % o["username"])
 
-                find = db.instagram_users.find({"username": o["username"]}).count()
-                if find == 0:
-                    i2 = db.instagram_users.insert({"username": o["username"], "crawlStatus": False})
+    if list == None:
+        if len(follower) > 0:
+            data = {"username": username, "follower_list": follower}
+            i = db.merihach_user_follower_userid.insert_one(data)
+            # for r in following:
+            #    l = r
+            y = 0
+            g = 1
+            for e in follower:
+                t = db.instagram_users.find({"owner": username, "type": "follower", "user_id": int(e)}).count()
+                if t == 0:
+                    following_de = bot.get_user_info(e)
+                    # print(following_de)
+                    o = following_de
+                    D = {"owner": username, "type": "follower", "username": o["username"], "user_id": int(e),
+                         "full_name": o["full_name"], "is_private": o["is_private"],
+                         "follower_count": o["follower_count"], "following_count": o["following_count"],
+                         "biography": o["biography"], "linke": o["external_url"], "profile_pic": o["profile_pic_url"]}
+                    i = db.merihach_instagram_users.insert_one(D)
+                    print("\n")
+                    print(str(g) + " - ")
+                    g = g + 1
+                    y = y + 1
+                    print("owner:%s" % username)
+                    print("username:%s" % o["username"])
 
+                    f = open("resume.txt", "a+")
+                    f.write('\n' + str(e))
+                    f.close()
 
-                time.sleep(10)
-                if y > 70:
-                    time.sleep(360)
-                    y = 0
+                    find = db.instagram_users.find({"username": o["username"]}).count()
+                    if find == 0:
+                        i2 = db.instagram_users.insert({"username": o["username"], "crawlStatus": False})
+
+                    time.sleep(10)
+                    if y > 70:
+                        time.sleep(360)
+                        y = 0
+                        continue
+                else:
                     continue
-            else:
-                continue
+        else:
+            d = {"owner": username, "follower list zero": True}
+            o = db.instagram_skip_list.insert_one(d)
+
     else:
-        d = {"owner": username, "follower list zero": True}
-        o = db.instagram_skip_list.insert_one(d)
+        for i in list:
+            print("Skip username: %s:" % i)
+
+            # hazf az list
+            follower = modification(follower, list)
+
+            y = 0
+            g = 1
+            for e in follower:
+                t = db.instagram_users.find({"owner": username, "type": "follower", "user_id": int(e)}).count()
+                if t == 0:
+                    following_de = bot.get_user_info(e)
+                    # print(following_de)
+                    o = following_de
+                    D = {"owner": username, "type": "follower", "username": o["username"], "user_id": int(e),
+                         "full_name": o["full_name"], "is_private": o["is_private"],
+                         "follower_count": o["follower_count"], "following_count": o["following_count"],
+                         "biography": o["biography"], "linke": o["external_url"], "profile_pic": o["profile_pic_url"]}
+                    i = db.merihach_instagram_users.insert_one(D)
+                    print("\n")
+                    print(str(g) + " - ")
+                    g = g + 1
+                    y = y + 1
+                    print("owner:%s" % username)
+                    print("username:%s" % o["username"])
+
+                    f = open("resume.txt", "a+")
+                    f.write('\n' + str(e))
+                    f.close()
+
+                    find = db.instagram_users.find({"username": o["username"]}).count()
+                    if find == 0:
+                        i2 = db.instagram_users.insert({"username": o["username"], "crawlStatus": False})
+
+                    time.sleep(10)
+                    if y > 70:
+                        time.sleep(360)
+                        y = 0
+                        continue
+                else:
+                    continue
+        else:
+            d = {"owner": username, "follower list zero": True}
+            o = db.instagram_skip_list.insert_one(d)
+
 
 
 
