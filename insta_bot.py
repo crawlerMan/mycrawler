@@ -329,30 +329,22 @@ def profileScrap(username,list = None):
 def checkout(username):
     try:
         print("check %s in database..." % username)
-        findc = db.instagram_users.find({"username": username}).count()
-        find = db.instagram_users.find({"username": username, "crawlStatus": True})
+        find = db.instagram_users.find({"username": username}).count()
+        print(find)
+        findc = db.instagram_users.find({"username": username, "crawlStatus": True}).count()
+        print(findc)
 
     except:
         print("Somethings in database was wrongs...")
 
     try:
-
-
-        if findc == 0:
+        if findc == 0 and find >= 0 :
+            print("%s was not crawled." % username)
             return True
-        elif findc == 1:
-            if find["crawlStatus"] == False:
-                return True
-            else:
-                return False
-        elif findc > 1:
-            for i in find:
-                if i["crawlStatus"] == False:
-                    return True
-                else:
-                    return False
-        else:
+        if findc >= 1:
+            print("%s was  crawled." % username)
             return False
+
     except:
         print("Somethings was wrong!")
         pass
@@ -361,10 +353,13 @@ def checkout(username):
 def startFunc():
 
     while True:
-        username = input("plz type a username: \t")
+        username = input("plz type an username: \t")
         if checkout(username):
             try:
                 x = db.instagram_users.insert({"username": username, "crawlStatus": False})
+                profileScrap(username=username)
+                crawler(username=username)
+                update = db.instagram_users.update({"username":username}, {"$set": {"crawlStatus": True}})
             except:
                 print("Somethings in database was wrong....")
             break
@@ -399,21 +394,19 @@ def main(ip):
                 lists = None
 
                 if type == "crawler":
-                    profileScrap(username, list=list)
+                    profileScrap(username, list=lists)
                 elif type == "Following" or "Followers":
-                    crawler(username=username, type=type, list=list)
+                    crawler(username=username, type=types, list=lists)
 
-
-                return username, types, lists
             if len(x) >= 2:
                 username = x[0]
                 types = x[1]
                 lists = x[2:]
 
                 if type == "crawler":
-                    profileScrap(username, list=list)
+                    profileScrap(username, list=lists)
                 elif type == "Following" or "Followers":
-                    crawler(username=username, type=type, list=list)
+                    crawler(username=username, type=types, list=lists)
 
 
 
@@ -436,7 +429,7 @@ def main(ip):
                     print("Start crawling %s" % i["username"])
                     profileScrap(i["username"])
                     crawler(i["username"])
-                    update = db.instagram_users.update({i["username"]}, {"$set": {"crawlStatus": True}})
+                    update = db.instagram_users.update({"username":i["username"]}, {"$set": {"crawlStatus": True}})
 
 
 
