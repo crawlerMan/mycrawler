@@ -9,6 +9,7 @@ import emoji
 from bson.binary import Binary
 import requests
 import os
+from collections import Counter
 
 
 def picToBinary(url):
@@ -170,21 +171,27 @@ def lanqdet(text):
     i = spliteKeyWord(t)
 
     filtered_fr = [w for w in i if not w in listStop]
-
+    i = 0
     for j in filtered_fr:
         try:
             b = TextBlob(j)
             x = b.detect_language()
             lanList.append(x)
-
-
+            i = i + 1
             # if x in lanList:
             #     pass
             # else:
             #     lanList.append(x)
         except:
             pass
-    return lanList
+    x = dict((x, lanList.count(x)) for x in set(lanList))
+    c = 0
+    for x,y in x.items():
+        c = (y / i) * 100
+        if c > 70:
+            return x
+        else:
+            return "unknown"
 
 
 
