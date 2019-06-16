@@ -330,9 +330,7 @@ def checkout(username):
     try:
         print("check %s in database..." % username)
         find = db.instagram_users.find({"username": username}).count()
-        print(find)
         findc = db.instagram_users.find({"username": username, "crawlStatus": True}).count()
-        print(findc)
 
     except:
         print("Somethings in database was wrongs...")
@@ -357,6 +355,7 @@ def startFunc():
         if checkout(username):
             try:
                 x = db.instagram_users.insert({"username": username, "crawlStatus": False})
+                print("Start crawling %s " %username)
                 profileScrap(username=username)
                 crawler(username=username)
                 update = db.instagram_users.update({"username":username}, {"$set": {"crawlStatus": True}})
@@ -664,7 +663,7 @@ def getfollowerListInfo(username,list = None):
 
 
 if __name__ == "__main__":
-    #bot.login()
+    bot.login()
     ip = input("""Choose one of them(Type number):
         1 - Resume...
         2 - type an username...
