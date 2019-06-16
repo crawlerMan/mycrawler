@@ -175,13 +175,15 @@ def lanqdet(text):
         try:
             b = TextBlob(j)
             x = b.detect_language()
-            if x in lanList:
-                pass
-            else:
-                lanList.append(x)
-        except:
-            print("Somethings was wrongs in lanq detect")
+            lanList.append(x)
 
+
+            # if x in lanList:
+            #     pass
+            # else:
+            #     lanList.append(x)
+        except:
+            pass
     return lanList
 
 
