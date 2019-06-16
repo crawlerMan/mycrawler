@@ -218,13 +218,15 @@ def crawler(username,type = None, list=None):
 
 
 
-def profileScrap(username,list = None):
+def profileScrap(username,list = None, types=None):
     userId = bot.get_user_id_from_username(username)
     medias = bot.get_total_user_medias(user_id=userId)
 
-    f = open("resume.txt", "w+")
-    f.write(username + '\n' + "crawler")
-    f.close()
+    if types == None:
+        f = open("resume.txt", "w+")
+        f.write(username + '\n' + "crawler")
+        f.close()
+
 
     if list == None:
         for m in medias:
@@ -410,7 +412,7 @@ def main(ip):
                 lists = None
 
                 if types == "crawler":
-                    profileScrap(username, list=lists)
+                    profileScrap(username, list=lists,types="resume")
                 elif types == "Following" or "Followers":
                     crawler(username=username, type=types, list=lists)
 
