@@ -20,7 +20,11 @@ def picToBinary(url):
 
 bot = Bot()
 
-
+def removeStr(t):
+    regex = re.compile(r'[\n\r\t]')
+    t = regex.sub('',t)
+    t = t.rstrip()
+    return t
 
 def resume():
     try:
@@ -28,6 +32,10 @@ def resume():
             f = open("resume.txt", "r")
             if f.mode == "r":
                 x = f.readlines()
+
+                for i in range(len(x)):
+                    x[i]=removeStr(x[i])
+
                 if len(x) == 0:
                     return None
 
@@ -401,19 +409,19 @@ def main(ip):
                 types = x[1]
                 lists = None
 
-                if type == "crawler":
+                if types == "crawler":
                     profileScrap(username, list=lists)
-                elif type == "Following" or "Followers":
+                elif types == "Following" or "Followers":
                     crawler(username=username, type=types, list=lists)
 
-            if len(x) >= 2:
+            if len(x) > 2:
                 username = x[0]
                 types = x[1]
                 lists = x[2:]
 
-                if type == "crawler":
+                if types == "crawler":
                     profileScrap(username, list=lists)
-                elif type == "Following" or "Followers":
+                elif types == "Following" or "Followers":
                     crawler(username=username, type=types, list=lists)
 
 
