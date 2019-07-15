@@ -376,7 +376,7 @@ def startFunc():
                 x = db.instagram_users.insert({"username": username, "crawlStatus": False})
                 print("Start crawling %s " %username)
                 profileScrap(username=username)
-                crawler(username=username)
+                #crawler(username=username)
                 update = db.instagram_users.update({"username":username}, {"$set": {"crawlStatus": True}})
             except:
                 print("Somethings in database was wrong....")
@@ -414,7 +414,8 @@ def main(ip):
                 if types == "crawler":
                     profileScrap(username, list=lists,types="resume")
                 elif types == "Following" or "Followers":
-                    crawler(username=username, type=types, list=lists)
+                    pass
+                    #crawler(username=username, type=types, list=lists)
 
             if len(x) > 2:
                 username = x[0]
@@ -424,7 +425,8 @@ def main(ip):
                 if types == "crawler":
                     profileScrap(username, list=lists)
                 elif types == "Following" or "Followers":
-                    crawler(username=username, type=types, list=lists)
+                    pass
+                    #crawler(username=username, type=types, list=lists)
 
 
 
@@ -445,8 +447,8 @@ def main(ip):
             elif findc > 0:
                 for i in find:
                     print("Start crawling %s" % i["username"])
-                    #profileScrap(i["username"])
-                    crawler(i["username"])
+                    profileScrap(i["username"])
+                    #crawler(i["username"])
                     update = db.instagram_users.update({"username":i["username"]}, {"$set": {"crawlStatus": True}})
 
 
