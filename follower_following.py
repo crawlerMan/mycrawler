@@ -209,7 +209,7 @@ def crawler(username,type = None, list=None):
         getfollowingListInfo(username)
         getfollowerListInfo(username)
 
-    elif type == "Follwers":
+    elif type == "Followers":
         getfollowingListInfo(username,list)
 
     elif type == "Followings":
@@ -349,7 +349,7 @@ def checkout(username):
     try:
         print("check %s in database..." % username)
         find = db.instagram_users.find({"username": username}).count()
-        findc = db.instagram_users.find({"username": username, "crawlStatus": True}).count()
+        findc = db.instagram_users.find({"username": username, "FFcrawlStatus": True}).count()
 
     except:
         print("Somethings in database was wrongs...")
@@ -373,11 +373,11 @@ def startFunc():
         username = input("plz type an username: \t")
         if checkout(username):
             try:
-                x = db.instagram_users.insert({"username": username, "crawlStatus": False})
+                x = db.instagram_users.insert({"username": username, "FFcrawlStatus": False})
                 print("Start crawling %s " %username)
-                profileScrap(username=username)
+                #profileScrap(username=username)
                 crawler(username=username)
-                update = db.instagram_users.update({"username":username}, {"$set": {"crawlStatus": True}})
+                update = db.instagram_users.update({"username":username}, {"$set": {"FFcrawlStatus": True}})
             except:
                 print("Somethings in database was wrong....")
             break
@@ -412,7 +412,8 @@ def main(ip):
                 lists = None
 
                 if types == "crawler":
-                    profileScrap(username, list=lists,types="resume")
+                    #profileScrap(username, list=lists,types="resume")
+                    pass
                 elif types == "Following" or "Followers":
                     crawler(username=username, type=types, list=lists)
 
@@ -422,7 +423,8 @@ def main(ip):
                 lists = x[2:]
 
                 if types == "crawler":
-                    profileScrap(username, list=lists)
+	                pass
+                    #profileScrap(username, list=lists)
                 elif types == "Following" or "Followers":
                     crawler(username=username, type=types, list=lists)
 
@@ -437,8 +439,8 @@ def main(ip):
 
         print("search for username in database...")
         while True:
-            find = db.instagram_users.find({"crawlStatus": False})
-            findc = db.instagram_users.find({"crawlStatus": False}).count()
+            find = db.instagram_users.find({"FFcrawlStatus": False})
+            findc = db.instagram_users.find({"FFcrawlStatus": False}).count()
             if findc == 0:
                 print("can not find any username in database...\n")
                 startFunc()
@@ -468,7 +470,7 @@ def modification(a,b):
 
 
 def getfollowingListInfo(username,list = None):
-
+    user_id =bot.get_user_id_from_username(username)
     f = open("resume.txt", "w+")
     f.write(username + '\n' + "Following")
     f.close()
@@ -477,9 +479,8 @@ def getfollowingListInfo(username,list = None):
 
     #agar hich listi naashtim
     if list == None:
-
         if len(following) > 0:
-            data = {"username": username, "following_list": following}
+            data = {"username": username, "user_id":int(user_id),"following_list": following}
             i = db.instagram_users_list.insert_one(data)
 
             y = 0
@@ -578,6 +579,7 @@ def getfollowingListInfo(username,list = None):
 
 
 def getfollowerListInfo(username,list = None):
+    user_id =bot.get_user_id_from_username(username)
 
     f = open("resume.txt", "w+")
     f.write(username + '\n' + "Followers")
@@ -587,7 +589,7 @@ def getfollowerListInfo(username,list = None):
 
     if list == None:
         if len(follower) > 0:
-            data = {"username": username, "follower_list": follower}
+            data = {"username": username, "user_id":int(user_id),"follower_list": follower}
             i = db.merihach_user_follower_userid.insert_one(data)
             # for r in following:
             #    l = r
