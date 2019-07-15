@@ -1,0 +1,84 @@
+db.merihach_user_follower_userid.aggregate
+([{$graphLookup:{from: "merihach_user_follower_userid",startWith: "$follower_list",connectFromField: "follower_list",connectToField: "username",as: "follwer connections",}},{$out : "connection"}])
+
+
+
+
+db.merihach_user_follower_userid.aggregate(
+    {$graphLookup:{from: "merihach_user_follower_userid",startWith: "$follower_list",connectFromField: "follower_list",connectToField: "username",as: "follwer connections",}}
+)
+
+
+
+db.merihach_user_follower_userid.insert
+({"username" : "matin","follower_list" : [128635081,836402,8364q80,328273064,89234,982374,72346823]})
+
+{
+    "username" : "sara",
+	"follower_list" : [6734723.836402,69340234,2390642,8273402,7923749,287492374]
+    
+}
+
+{
+    "username" : "matin",
+	"follower_list" : [128635081.836402,8364q80,328273064,89234,982374,72346823]
+    
+}
+
+{
+    "username" : "sara",
+	"follower_list" : [893274732.89374234,69340234,8327493847,9237649734,3928493264,2983498234]
+    
+}
+
+	db.merihach_user_follower_userid.insert
+({"username" : "matin","follower_list" : [128635081.836402,8364q80,328273064,89234,982374,72346823]})
+
+
+db.graph.insert({"username" : "satar",
+	"follower_list" : [1234,324234,234234324,234234234,5456456,575675,23467]})
+
+
+db.graph.aggregate(
+{$graphLookup:{from: "graph",startWith: "$follower_list",connectFromField: "follower_list",connectToField: "username",as: "follwer connections"}})
+
+
+arta=1234
+sara=4325
+karim=4234
+mahbobeh=342341
+morvarid=3245234
+susan=9903453
+
+
+db.graphtree.insertMany([{"name":"arta",user_id:1234,follower_list:[4325,28689,39234,3454234,23423523,534534234]}
+,{"name":"sara",user_id:4325,follower_list:[23342342,44345,3936234,555321,888764,125689]}
+,{"name":"karim",user_id:4234,follower_list:[6345,634454,5453234,3245234,2345345,745523]}
+,{"name":"mahbobeh",user_id:342341,follower_list:[353456,34245636,23445356,236789,223456,123425689]}
+,{"name":"morvarid",user_id:3245234,follower_list:[4325,1234,677784,234674,246346,3235522]}])
+
+
+db.graphtwo.aggregate( {$graphLookup:{from: "graphtwo",startWith: "$follower_list",connectFromField: "follower_list",connectToField: "user_is",as: "follwer connections"}}).pretty()
+
+
+
+
+db.graphtwo.aggregate( 
+  { $match: { "name": "arta" } },
+  { $graphLookup: {
+      from: "graphtwo",
+      startWith: "$follower_list",
+      connectFromField: "user_id",
+      connectToField: "follower_list",
+      as: "mutul_friend"
+    }
+  }
+)
+
+db.graphtree.aggregate(   { $match: { "name": "sara" } },   { $graphLookup: {       from: "graphtree",       startWith: "$follower_list",       connectFromField: "follower_list",       connectToField: "user_id",       as: "mutul_friend"     }   } ).pretty()
+
+
+db.graphtree.aggregate(   { $match: { "name": "morvarid" } },   { $graphLookup: {       from: "graphtree",       startWith: "$follower_list",       connectFromField: "user_id",       connectToField: "follower_list",       as: "mutul_friend"     }   } ).pretty()
+
+
+
