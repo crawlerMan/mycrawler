@@ -1,0 +1,40 @@
+from confluent_kafka import Producer
+import json
+
+def kafkaproducer(jsn,topic,brokers = '10.0.1.183:9091,10.0.1.184:9093,10.0.1.185:9094'):
+    data = str(jsn)
+
+    def delivery_report(err, msg):
+        """ Called once for each message produced to indicate delivery result.
+            Triggered by poll() or flush(). """
+        if err is not None:
+            print('Message delivery failed: {}'.format(err))
+            logmaker(bot="insta", kind="error", description="kafka Message delivery failed - topic: %s " % topic)
+        else:
+            print('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
+    try:
+        p = Producer({'bootstrap.servers': brokers})
+
+    except:
+        print("plz Check Kafka connections...")
+        logmaker(bot="insta", kind="error", description="kafka connections error ")
+        time.sleep(10)
+        pass
+
+    try:
+        # Trigger any available delivery report callbacks from previous produce() calls
+        p.poll(0)
+        p.produce(topic, data.encode('utf-8'), callback=delivery_report)
+
+        p.flush()
+
+    except:
+        print("somethings wet wrong in kafka produce")
+        logmaker(bot="insta", kind="error", description="somethings wet wrong in kafka produce - topic: %s " % topic)
+
+
+json={"name":"Vahid","نام":"وحید"}
+
+for i in range(100):
+    kafkaproducer(jsn=json,topic= "instagram_bot")
+
